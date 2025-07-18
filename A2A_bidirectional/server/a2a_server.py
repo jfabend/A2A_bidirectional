@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import uuid
+from uuid import uuid4
 from typing import Any, Dict
 
 from fastapi import FastAPI, HTTPException
@@ -13,12 +14,15 @@ from A2A_bidirectional.utils.remote_client import AgentCard, TaskState
 __all__ = ["create_app", "start_server"]
 
 
-async def _call_agent(agent, user_msg: str) -> str:
-    # LangGraph agents are blocking → run in threadpool to avoid FastAPI lag.
+async def _call_agent(agent, user_msg: str, thread_id: str | None = None) -> str:
+    thread_id = thread_id or str(uuid4())
     loop = asyncio.get_running_loop()
     return await loop.run_in_executor(
         None,
-        lambda: agent.invoke({"messages": [{"role": "user", "content": user_msg}]}),
+        lambda: agent.invoke(
+            {"messages": [{"role": "user", "content": user_msg}]},
+            config={"configurable": {"thread_id": thread_id}},
+        ),
     )
 
 
@@ -41,10 +45,10 @@ def create_app(agent, agent_card: AgentCard) -> FastAPI:
 
         params = body["params"]
         text = params["message"]["parts"][0]["text"]
-        session_id = params.get("sessionId", "")
+        session_id = params.get("sessionId") or str(uuid.uuid4())
         _ = session_id  # left here in case you want session memories
 
-        reply = await _call_agent(agent, text)
+        reply = await _call_agent(agent, text, session_id)
 
         # Normalise reply → we always send COMPLETED for demo
         result = {

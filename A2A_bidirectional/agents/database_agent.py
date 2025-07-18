@@ -37,7 +37,7 @@ cli = typer.Typer(help="Run the HostAgent")
 # ----- 1) NEW: interactive chat ------------------------------------------------
 @cli.command()
 def chat(
-    name: str = "HostAgent",
+    name: str = "DatabaseAgent",
     peers: list[str] = typer.Option(
         [], help="Comma‑separated list of peer URLs (e.g. http://localhost:8001)"
     ),
@@ -82,9 +82,9 @@ def chat(
 
 # ----- 2) OLD: still possible to expose as HTTP (renamed) ---------------------
 @cli.command()
-def serve(
-    name: str = "HostAgent",
-    port: int = 8000,
+def run(
+    name: str = "DatabaseAgent",
+    port: int = 8001,
     peers: list[str] = typer.Option([], help="Comma‑separated list of peer URLs"),
 ):
     host_agent = HostAgent(peers)
@@ -97,7 +97,7 @@ def serve(
     card = AgentCard(
         name=name,
         url=f"http://localhost:{port}",
-        description="Delegates inventory & FX tasks to specialised peers.",
+        description="Provides information about inventory",
         capabilities=AgentCapabilities(streaming=False),
     )
     start_server(create_app(react_agent, card), port)

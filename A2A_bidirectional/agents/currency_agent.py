@@ -66,7 +66,7 @@ def chat(
 
 
 @cli.command()
-def serve(
+def run(
     name: str = "CurrencyAgent",
     port: int = 8002,
     peers: list[str] = typer.Option([], help="Peer URLs"),
