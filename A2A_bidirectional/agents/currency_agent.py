@@ -1,42 +1,79 @@
+"""CurrencyAgent – converts money or delegates to HostAgent."""
 from __future__ import annotations
 
 import typer
+from langchain_core.messages import AIMessage
 from langchain_core.tools import tool
 
-from A2A_bidirectional.utils.remote_client import HostAgent, AgentCard, AgentCapabilities
+from A2A_bidirectional.utils.remote_client import HostAgent
 from A2A_bidirectional.core.react_agent_factory import build_react_agent
 from A2A_bidirectional.server.a2a_server import create_app, start_server
+from A2A_bidirectional.utils.remote_client import AgentCard, AgentCapabilities
 
-# ------------------------------------------------------------------
-# Internal skill
-# ------------------------------------------------------------------
+def _make_router_tools(host_agent: HostAgent):
+    @tool
+    def convert(amount: float, from_: str, to: str) -> str:  # noqa: A002
+        """Naïve conversion using a fixed demo rate."""
+        rate = 1.1
+        return f"{amount} {from_} = {amount * rate:.2f} {to} (demo rate)"
+
+    @tool
+    def count_inventory(product_type: str) -> str:
+        """Delegate currency conversion to CurrencyAgent."""
+        return host_agent.send_task(
+            "DatabaseAgent", f"Count inventory for product type {product_type}"
+        )
+    
+    return [count_inventory, convert]
 
 
-@tool
-def convert(amount: float, from_: str, to: str) -> str:  # noqa: A002
-    """Naive conversion with fake rate."""
-    fake_rate = 1.1  # static demo rate
-    return f"{amount} {from_} = {amount * fake_rate:.2f} {to} (demo rate)"
+EXTRA_INSTRUCTIONS = """
+• If the question is a currency conversion, use convert().
+• Otherwise delegate to HostAgent via send_task("HostAgent", original_question).
+"""
 
-
-cli = typer.Typer(help="Run the Currency Agent")
+cli = typer.Typer(help="Run the CurrencyAgent")
 
 
 @cli.command()
-def run(
+def chat(
     name: str = "CurrencyAgent",
-    port: int = 8002,
-    peers: list[str] = typer.Option([], help="Comma separated list of peer URLs"),
+    peers: list[str] = typer.Option(
+        [], help="Peer URLs (typically just the HostAgent, e.g. http://localhost:8000)"
+    ),
 ):
     host_agent = HostAgent(peers)
     host_agent.initialize()
+    react_agent = build_react_agent(name, _make_router_tools(host_agent), host_agent, EXTRA_INSTRUCTIONS)
 
-    extra_instructions = """
-    • If the question is clearly a money conversion, use your internal convert() tool.
-    • Otherwise delegate to HostAgent by send_task("HostAgent", original_question).
-    """
+    typer.echo(f"{name} ready. Type 'exit' to quit.")
+    while True:
+        user_msg = typer.prompt("\nUser")
+        if user_msg.lower() in {"exit", "quit", "bye"}:
+            typer.echo("Good‑bye!")
+            break
 
-    react_agent = build_react_agent(name, [convert], host_agent, extra_instructions)
+        raw = react_agent.invoke(
+            {"messages": [{"role": "user", "content": user_msg}]},
+            config={"configurable": {"thread_id": "cli-session"}},
+        )
+        reply = (
+            next((m.content for m in reversed(raw["messages"]) if isinstance(m, AIMessage)), None)
+            if isinstance(raw, dict) and "messages" in raw
+            else raw
+        )
+        typer.echo(f"{name}: {reply}")
+
+
+@cli.command()
+def serve(
+    name: str = "CurrencyAgent",
+    port: int = 8002,
+    peers: list[str] = typer.Option([], help="Peer URLs"),
+):
+    host_agent = HostAgent(peers)
+    host_agent.initialize()
+    react_agent = build_react_agent(name, _make_router_tools(host_agent), host_agent, EXTRA_INSTRUCTIONS)
 
     card = AgentCard(
         name=name,
@@ -44,9 +81,7 @@ def run(
         description="Converts currencies; delegates unknown questions to HostAgent.",
         capabilities=AgentCapabilities(streaming=False),
     )
-
-    app = create_app(react_agent, card)
-    start_server(app, port)
+    start_server(create_app(react_agent, card), port)
 
 
 if __name__ == "__main__":
