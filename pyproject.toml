@@ -1,0 +1,8 @@
+[project]
+name = "A2A_bidirectional"
+version = "0.1.0"
+description = "A2A_bidirectional"
+
+[build-system]
+build-backend = "flit_core.buildapi"
+requires = ["flit_core >=3.2,<4"]
