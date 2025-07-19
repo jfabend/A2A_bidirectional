@@ -22,7 +22,7 @@ def _make_router_tools(host_agent: HostAgent, self_card: AgentCard):
     def count_inventory(product_type: str) -> str:
         """Delegate currency conversion to CurrencyAgent."""
         return host_agent.send_task(
-            "DatabaseAgent", f"Count inventory for product type {product_type}"
+            "HostAgent", f"Count inventory for product type {product_type}"
         )
     
     @tool

@@ -24,7 +24,7 @@ def _make_router_tools(host_agent: HostAgent, self_card: AgentCard):
     def convert(amount: float, from_: str, to: str) -> str:  # noqa: A002
         """Delegate currency conversion to CurrencyAgent."""
         return host_agent.send_task(
-            "CurrencyAgent", f"Convert {amount} {from_} to {to}"
+            "HostAgent", f"Convert {amount} {from_} to {to}"
         )
     
     @tool
