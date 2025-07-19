@@ -9,6 +9,7 @@ from A2A_bidirectional.utils.remote_client import HostAgent
 from A2A_bidirectional.core.react_agent_factory import build_react_agent
 from A2A_bidirectional.server.a2a_server import create_app, start_server
 from A2A_bidirectional.utils.remote_client import AgentCard, AgentCapabilities
+from A2A_bidirectional.utils.helpers import _serve_in_background
 
 def _make_router_tools(host_agent: HostAgent, self_card: AgentCard):
     @tool
@@ -62,6 +63,15 @@ def chat(
     )
 
     react_agent = build_react_agent(name, _make_router_tools(host_agent, card), host_agent, EXTRA_INSTRUCTIONS)
+
+    _serve_in_background(react_agent, card, port)
+
+    try:
+        requests.post("http://localhost:8000/register",
+                    json=card.model_dump(), timeout=5)
+        print("✅ auto‑registered with HostAgent\n")
+    except requests.RequestException as exc:
+        print(f"⚠️  could not register automatically: {exc}\n")
 
     typer.echo(f"{name} ready. Type 'exit' to quit.")
     while True:
