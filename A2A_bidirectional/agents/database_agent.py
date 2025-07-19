@@ -8,7 +8,7 @@ from A2A_bidirectional.utils.remote_client import HostAgent
 from A2A_bidirectional.core.react_agent_factory import build_react_agent
 from A2A_bidirectional.server.a2a_server import create_app, start_server
 from A2A_bidirectional.utils.remote_client import AgentCard, AgentCapabilities
-from A2A_bidirectional.utils.helpers import _serve_in_background
+from A2A_bidirectional.utils.helpers import serve_and_register
 
 
 ###############################################################################
@@ -75,14 +75,8 @@ def chat(
 • Otherwise answer politely that you’re not the right specialist.
 """,
     )
-    _serve_in_background(react_agent, card, port)
-
-    try:
-        requests.post("http://localhost:8000/register",
-                    json=card.model_dump(), timeout=5)
-        print("✅ auto‑registered with HostAgent\n")
-    except requests.RequestException as exc:
-        print(f"⚠️  could not register automatically: {exc}\n")
+    app = create_app(react_agent, card)
+    serve_and_register(app, card, port, "http://localhost:8000")
 
     typer.echo(f"{name} ready. Type 'exit' to quit.")
     while True:
