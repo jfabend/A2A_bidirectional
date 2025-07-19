@@ -1,7 +1,7 @@
 """Synchronous JSON‑RPC client + lightweight discovery for A2A peers."""
 from __future__ import annotations
 
-import uuid
+import uuid, threading
 from typing import Dict, List, Optional
 
 import requests
@@ -38,13 +38,18 @@ class AgentCard:
         name: str,
         url: str,
         version: str = "0.1.0",
-        capabilities: Optional[AgentCapabilities] = None,
+        capabilities: AgentCapabilities | dict | None = None,
         description: str | None = None,
     ) -> None:
         self.name = name
         self.url = url
         self.version = version
-        self.capabilities = capabilities or AgentCapabilities()
+        if capabilities is None:
+            capabilities = AgentCapabilities()
+        elif isinstance(capabilities, dict):
+            capabilities = AgentCapabilities(**capabilities)
+
+        self.capabilities = capabilities
         self.description = description or "No description."
 
     # -------------------------------------------------------------
@@ -116,12 +121,41 @@ class RemoteAgentClient:
 
 
 class HostAgent:
-    """Stores *several* RemoteAgentClients and offers convenience wrappers."""
+    """
+    Registry‑aware host that can be both:
+        • a client (for making JSON‑RPC calls)
+        • a registry (for other agents to register themselves)
+    """
+    def __init__(self, peer_urls: List[str] | None = None):
+        self._clients: Dict[str, RemoteAgentClient] = {}
+        self._registry: Dict[str, AgentCard] = {}
+        self._lock = threading.Lock()
+        for url in peer_urls or []:
+            self._add_client(url)
+ 
+    # ------------------------------------------------------------------ #
+    # Registry primitives                                                #
+    # ------------------------------------------------------------------ #
+    def _add_client(self, url: str) -> RemoteAgentClient:
+        client = self._clients.setdefault(url, RemoteAgentClient(url))
+        try:
+            card = client.fetch_agent_card()
+            self._registry[card.name] = card
+        except Exception as exc:       # noqa: BLE001
+            print(f"[WARN] Could not load AgentCard from {url}: {exc}")
+        return client
 
-    def __init__(self, peer_urls: List[str]):
-        self._clients: Dict[str, RemoteAgentClient] = {
-            url: RemoteAgentClient(url) for url in peer_urls
-        }
+    def register_agent(self, card: AgentCard) -> None:
+        """
+        Called by **other** agents (via REST) to announce themselves.
+        Updates the registry and creates a `RemoteAgentClient` on‑the‑fly.
+        """
+        with self._lock:
+            self._registry[card.name] = card
+            self._add_client(card.url)
+
+    def list_agents(self) -> list[dict]:
+        return [c.model_dump() for c in self._registry.values()]
 
     # ---------------- Public helpers ----------------
     def initialize(self) -> None:

@@ -66,6 +66,19 @@ def run(
     )
 
     app = create_app(react_agent, card)
+    
+    # ---- extra REST routes for registry ----
+
+    @app.post("/register", status_code=201)
+    async def register_endpoint(card_in: dict):
+        """Called by peers once at start‑up."""
+        host_agent.register_agent(AgentCard(**card_in))
+        return {"ok": True, "knownPeers": host_agent.list_agents()}
+
+    @app.get("/peers")
+    async def peers_endpoint():
+        return host_agent.list_agents()
+
     start_server(app, port)
 
 
