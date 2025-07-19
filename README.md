@@ -1,6 +1,6 @@
 # A2A_bidirectional
 
-Currency agent can ask host agent to forward task to database agent.
 
-To dos:
-Need to integrate an agent registry mechanism to enable agents to add each other to the peer list.
+python -m A2A_bidirectional.agents.host_agent.py
+python A2A_bidirectional/agents/database_agent.py chat --peers http://localhost:8000
+python A2A_bidirectional/agents/currency_agent.py chat --peers http://localhost:8000
