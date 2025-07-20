@@ -19,7 +19,9 @@ pip install -r requirements.txt
 python -m A2A_bidirectional.agents.host_agent run
 
 # 3️⃣ Spin up some specialists
+# One dummy agent which counts inventory in a database
 python -m A2A_bidirectional.agents.database_agent chat --peers http://localhost:8000
+# One dummy agent which converts currencies
 python -m A2A_bidirectional.agents.currency_agent chat --peers http://localhost:8000
 ```
 After the **DatabaseAgent** and **CurrencyAgent** have registered themselves with the **HostAgent** you can chat with any of them and they will seamlessly delegate work to the right peer.
@@ -30,6 +32,19 @@ After the **DatabaseAgent** and **CurrencyAgent** have registered themselves wit
 
 ### 1. Runtime interaction
 
+sequenceDiagram
+    autonumber
+    participant User
+    participant DatabaseAgent
+    participant CurrencyAgent
+
+    User->>DatabaseAgent: "How many SSDs do we have left in the warehouse? What are 10 Euros in US dollars?"
+    DatabaseAgent->>DatabaseAgent: count_inventory("SSD")
+    Note right of DatabaseAgent: returns "42"
+    DatabaseAgent->>CurrencyAgent: convert(10, "EUR", "USD")
+    CurrencyAgent-->>DatabaseAgent: "11 USD (demo rate)"
+    DatabaseAgent-->>User: "42 units on stock. And 10 Euros are 11 US dollars."
+
 ```mermaid
 sequenceDiagram
     autonumber
@@ -38,12 +53,12 @@ sequenceDiagram
     participant DatabaseAgent
     participant CurrencyAgent
 
-    User->>HostAgent: "How many SSDs do we have and what is that in EUR?"
+    User->>HostAgent: "How many SSDs do we have left in the warehouse? What are 10 Euros in US dollars?"
     HostAgent->>DatabaseAgent: count_inventory("SSD")
     DatabaseAgent-->>HostAgent: "42"
-    HostAgent->>CurrencyAgent: convert(42, "USD", "EUR")
-    CurrencyAgent-->>HostAgent: "38.18 EUR (demo rate)"
-    HostAgent-->>User: "42 units on stock ≙ 38.18 €"
+    HostAgent->>CurrencyAgent: convert(10, "EUR", "USD")
+    CurrencyAgent-->>HostAgent: "11 USD (demo rate)"
+    HostAgent-->>User: "42 units on stock. And 10 Euros are 11 US dollars."
 ```
 
 ### 2. Dynamic agent registration
