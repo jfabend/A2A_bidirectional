@@ -14,31 +14,24 @@ from A2A_bidirectional.utils.helpers import serve_and_register
 def _make_router_tools(host_agent: HostAgent, self_card: AgentCard):
     @tool
     def convert(amount: float, from_: str, to: str) -> str:  # noqa: A002
-        """Naïve conversion using a fixed demo rate."""
+        """This tool converts currencies using a fixed demo rate."""
         rate = 1.1
         return f"{amount} {from_} = {amount * rate:.2f} {to} (demo rate)"
 
     @tool
-    def count_inventory(product_type: str) -> str:
-        """Delegate currency conversion to CurrencyAgent."""
+    def delegate_task(task_str: str) -> str:
+        """Delegate tasks to other agents if you cannot solve it."""
+        print(task_str)
         return host_agent.send_task(
-            "HostAgent", f"Count inventory for product type {product_type}"
+            "HostAgent", task_str
         )
-    
-    #@tool
-    #def register(host_url: str = "http://localhost:8000") -> str:
-    #    """
-     #   Tell HostAgent where I am.  Needs to be called only once.
-    #   """
-    #    requests.post(f"{host_url}/register", json=self_card.model_dump(), timeout=5)
-    #    return "✅ registered with HostAgent"
  
-    return [convert, count_inventory]
+    return [convert, delegate_task]
 
 
 EXTRA_INSTRUCTIONS = """
 • If the question is a currency conversion, use convert().
-• Otherwise delegate to HostAgent via send_task("HostAgent", original_question).
+• Otherwise delegate to HostAgent via send_task("HostAgent", task_str).
 """
 
 cli = typer.Typer(help="Run the CurrencyAgent")

@@ -17,25 +17,22 @@ from A2A_bidirectional.utils.helpers import serve_and_register
 def _make_router_tools(host_agent: HostAgent, self_card: AgentCard):
     @tool
     def count_inventory(product_type: str) -> str:
-        """Delegate inventory count to DatabaseAgent."""
+        """This tool counts the inventory for a certain product type."""
         return str(random.randint(0,9))
 
     @tool
-    def convert(amount: float, from_: str, to: str) -> str:  # noqa: A002
-        """Delegate currency conversion to CurrencyAgent."""
+    def delegate_task(task_str: str) -> str:
+        """Delegate tasks to other agents if you cannot solve it."""
         return host_agent.send_task(
-            "HostAgent", f"Convert {amount} {from_} to {to}"
+            "HostAgent", task_str
         )
-    
-    #@tool
-    #def register(host_url: str = "http://localhost:8000") -> str:
-    #    """
-    #    Tell HostAgent where I am.  Needs to be called only once.
-    #    """
-    #    requests.post(f"{host_url}/register", json=self_card.model_dump(), timeout=5)
-    #    return "✅ registered with HostAgent"
 
-    return [count_inventory, convert]
+    return [count_inventory, delegate_task]
+
+EXTRA_INSTRUCTIONS= """
+• If the question is related to inventory, use count_inventory().
+• Otherwise delegate to HostAgent via send_task("HostAgent", task_str).
+"""
 
 
 ###############################################################################
@@ -69,11 +66,7 @@ def chat(
         name,
         _make_router_tools(host_agent, card),
         host_agent,
-        extra_instructions="""
-• For inventory questions call count_inventory().
-• For currency questions  call convert().
-• Otherwise answer politely that you’re not the right specialist.
-""",
+        extra_instructions=EXTRA_INSTRUCTIONS,
     )
     app = create_app(react_agent, card)
     serve_and_register(app, card, port, "http://localhost:8000")
@@ -117,7 +110,7 @@ def run(
     )
 
     react_agent = build_react_agent(
-        name, _make_router_tools(host_agent, card), host_agent, extra_instructions=""
+        name, _make_router_tools(host_agent, card), host_agent, extra_instructions=EXTRA_INSTRUCTIONS
     )
 
     start_server(create_app(react_agent, card), port)
