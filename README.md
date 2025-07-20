@@ -26,6 +26,14 @@ python -m A2A_bidirectional.agents.currency_agent chat --peers http://localhost:
 ```
 After the **DatabaseAgent** and **CurrencyAgent** have registered themselves with the **HostAgent** you can chat with any of them and they will seamlessly delegate work to the right peer.
 
+The database agent has two tools:
+1. Count inventory for a certain product (A dummy function which returns a random int)
+2. Ask the host agent for help
+
+The currency agent has two tools:
+1. Convert a certain amount from currency A into currency B (A dummy function with 1.1 as fix conversion rate)
+2. Ask the host agent for help
+
 ---
 
 ## 🖼️ How it works
