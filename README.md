@@ -1,10 +1,12 @@
 # A2A_bidirectional - Bidirectional task delegation using A2A
 ## Introduction
-This repository provides a small and easy A2A example written in Python where each agent can be both client and server at the same time.
-Each of the agents is capable of receiving tasks and delegating it to other agents. Each agent can talk to any peer through the lightweight Agent‑to‑Agent (A2A) JSON‑RPC protocol, and register itself dynamically at run‑time.
+This repository provides a small and easy A2A example written in Python where __each agent can be both client and server at the same time__.
+__Each of the agents is capable of receiving tasks and delegating them to other agents__. Each agent can talk to any peer through the lightweight Agent‑to‑Agent (A2A) JSON‑RPC protocol, and register itself dynamically at run‑time.
 
-The host agent represents an agent registry. Each agent, which will be added to the setup as a new server, receives the host agent address as input argument during the launch.
+The host agent represents an __agent registry__. Each agent, which will be added to the setup as a new server, receives the host agent address as input argument during the launch.
 It calls the host agent during the launch to get registered. Once it has been registered, other agents are able to call this new agent via the host agent without knowing the address of the newly added agent.
+
+At the moment, this repo leverages only LangGraph ReAct agents. But agents built with other frameworks or individual LangGraph workflows can be added easily as well (described below).
 
 ---
 
@@ -57,7 +59,7 @@ sequenceDiagram
     DatabaseAgent-->>User: "42 units on stock. And 10 Euros are 11 US dollars."
 ```
 
-The following way would also be possible (but only via API call towards the host agent, not via cli chat):
+The following way would also be possible (but only via API call towards the host agent. Cli chat has not been implemented here.):
 ```mermaid
 sequenceDiagram
     autonumber
@@ -74,7 +76,7 @@ sequenceDiagram
     HostAgent-->>User: "42 units on stock. And 10 Euros are 11 US dollars."
 ```
 
-### 2. Dynamic agent registration
+### 2. Dynamic agent registration (runs automatically)
 
 ```mermaid
 sequenceDiagram
@@ -93,6 +95,8 @@ sequenceDiagram
 
 ## 🧩 Repository layout
 
+Currently, all the agents are LangGraph ReAct agents. They can receive multiple tasks within one query, reason which tool to use for each task and delegate single tasks to other agents.
+
 | Path | What’s inside |
 |------|---------------|
 | `A2A_bidirectional/agents/` | Ready‑to‑run example agents: **host_agent.py**, **database_agent.py**, **currency_agent.py** |
@@ -105,11 +109,13 @@ sequenceDiagram
 
 ## ➕ Adding a new agent in *3 steps*
 
+Currently, all the agents are LangGraph ReAct agents. In the section roadmap, I explain how other agents can be added.
+
 1. **Create your internal skills** – plain Python functions decorated with `@tool` (from *LangChain*).
 2. **Wrap them in a ReAct agent** using `build_react_agent()` and provide the extra routing rules that explain **when to delegate**.
 3. **Expose & register** the agent:
    ```python
-   app  = create_app(react_agent, card)
+   app  = create_app(react_agent, card) # expects an invokeable, compiled agent
    serve_and_register(app, card, port=8003, host_url="http://localhost:8000")
    ```
    The helper automatically starts the FastAPI server **and** POSTs the `AgentCard` to the HostAgent.
@@ -141,3 +147,13 @@ That’s it – all other peers can now call your agent via `send_task(<YourAgen
 | `HOST_URL` | URL where the HostAgent is reachable | `http://localhost:8000` |
 
 ---
+
+## 📋 Roadmap
+
+- [ ] Make it easier to add new agents (especially based on other frameworks - see below)
+- [ ] ✨ Add `docker-compose.yml` with three example services
+
+Currently, all the agents are LangGraph ReAct agents. The _call_agent function in server/a2a_server.py defines ways how agents can be called.
+It only contains the invoke call for LangGraph at the moment. But calls for crew.ai, Autogen and all the other frameworks can be added here.
+You can then add a framework field to the AgentCard class in utils/remote_client.py where one of these frameworks can be entered.
+The _call_agent function could then select the right agent call depending on the framework used of each agent.
