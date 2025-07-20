@@ -32,6 +32,7 @@ After the **DatabaseAgent** and **CurrencyAgent** have registered themselves wit
 
 ### 1. Runtime interaction
 
+```mermaid
 sequenceDiagram
     autonumber
     participant User
@@ -44,6 +45,7 @@ sequenceDiagram
     DatabaseAgent->>CurrencyAgent: convert(10, "EUR", "USD")
     CurrencyAgent-->>DatabaseAgent: "11 USD (demo rate)"
     DatabaseAgent-->>User: "42 units on stock. And 10 Euros are 11 US dollars."
+```
 
 ```mermaid
 sequenceDiagram
