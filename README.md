@@ -39,7 +39,7 @@ sequenceDiagram
     participant DatabaseAgent
     participant CurrencyAgent
 
-    User->>DatabaseAgent: "How many SSDs do we have left in the warehouse? What are 10 Euros in US dollars?"
+    User->>DatabaseAgent: "How many SSDs do we have left? What are 10 Euros in US dollars?"
     DatabaseAgent->>DatabaseAgent: count_inventory("SSD")
     Note right of DatabaseAgent: returns "42"
     DatabaseAgent->>CurrencyAgent: convert(10, "EUR", "USD")
@@ -55,7 +55,7 @@ sequenceDiagram
     participant DatabaseAgent
     participant CurrencyAgent
 
-    User->>HostAgent: "How many SSDs do we have left in the warehouse? What are 10 Euros in US dollars?"
+    User->>HostAgent: "How many SSDs do we have left? What are 10 Euros in US dollars?"
     HostAgent->>DatabaseAgent: count_inventory("SSD")
     DatabaseAgent-->>HostAgent: "42"
     HostAgent->>CurrencyAgent: convert(10, "EUR", "USD")
