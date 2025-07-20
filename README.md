@@ -17,8 +17,8 @@ At the moment, this repo leverages only LangGraph ReAct agents. But agents built
 pip install -e .
 pip install -r requirements.txt
 
-# 2️⃣ Start the registry / router
-python -m A2A_bidirectional.agents.host_agent run
+# 2️⃣ Start the registry / router - !! Sometimes you need to add 'run' at the end and/or the .py
+python -m A2A_bidirectional.agents.host_agent
 
 # 3️⃣ Spin up some specialists
 # One dummy agent which counts inventory in a database
