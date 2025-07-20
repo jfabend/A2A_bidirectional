@@ -131,7 +131,7 @@ That’s it – all other peers can now call your agent via `send_task(<YourAgen
 |---------|---------|
 | **Scalable decentral architecture** | Any agent can delegate to any other, avoiding single‑point bottlenecks. |
 | **Plug‑and‑play discovery** | Agents self‑register; new capabilities become available at run‑time with zero config changes. |
-| **No vendor lock‑in** | Pure Python, standard JSON‑RPC over HTTP; replace LLM/agent implementation freely. |
+| **No vendor/framework lock‑in** | Pure Python, standard JSON‑RPC over HTTP; replace LLM/agent implementation freely. |
 | **Docker‑ready** | Every example agent is a standalone Python entry‑point → trivial to wrap in a tiny Docker image or deploy as a micro‑service. |
 | **LangGraph + ReAct out‑of‑the‑box** | Combines structured tool‑use reasoning with memory, concurrency & streaming if you enable it. |
 | **Streamlined DX** | Less than 600 LOC in total, readable and heavily commented code, poetry/flit project metadata. |
