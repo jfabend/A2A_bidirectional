@@ -42,11 +42,14 @@ sequenceDiagram
     User->>DatabaseAgent: "How many SSDs do we have left? What are 10 Euros in US dollars?"
     DatabaseAgent->>DatabaseAgent: count_inventory("SSD")
     Note right of DatabaseAgent: returns "42"
-    DatabaseAgent->>CurrencyAgent: convert(10, "EUR", "USD")
-    CurrencyAgent-->>DatabaseAgent: "11 USD (demo rate)"
+    DatabaseAgent->>HostAgent: convert(10, "EUR", "USD")
+    HostAgent->>CurrencyAgent: convert(10, "EUR", "USD")
+    CurrencyAgent-->>HostAgent: "11 USD (demo rate)"
+    HostAgent-->>DatabaseAgent: "11 USD (demo rate)"
     DatabaseAgent-->>User: "42 units on stock. And 10 Euros are 11 US dollars."
 ```
 
+The following way would also be possible (but only via API call towards the host agent, not via cli chat):
 ```mermaid
 sequenceDiagram
     autonumber
