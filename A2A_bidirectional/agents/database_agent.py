@@ -27,15 +27,15 @@ def _make_router_tools(host_agent: HostAgent, self_card: AgentCard):
             "HostAgent", f"Convert {amount} {from_} to {to}"
         )
     
-    @tool
-    def register(host_url: str = "http://localhost:8000") -> str:
-        """
-        Tell HostAgent where I am.  Needs to be called only once.
-        """
-        requests.post(f"{host_url}/register", json=self_card.model_dump(), timeout=5)
-        return "✅ registered with HostAgent"
+    #@tool
+    #def register(host_url: str = "http://localhost:8000") -> str:
+    #    """
+    #    Tell HostAgent where I am.  Needs to be called only once.
+    #    """
+    #    requests.post(f"{host_url}/register", json=self_card.model_dump(), timeout=5)
+    #    return "✅ registered with HostAgent"
 
-    return [register, count_inventory, convert]
+    return [count_inventory, convert]
 
 
 ###############################################################################
