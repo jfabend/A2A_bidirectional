@@ -18,6 +18,7 @@ pip install -e .
 pip install -r requirements.txt
 
 # 2️⃣ Start the registry / router - !! Sometimes you need to add 'run' at the end and/or the .py
+# runs at http://localhost:8000 by default
 python -m A2A_bidirectional.agents.host_agent
 
 # 3️⃣ Spin up some specialists
