@@ -27,6 +27,8 @@ async def _call_agent(agent, user_msg: str, thread_id: str | None = None) -> str
 
 
 def create_app(agent, agent_card: AgentCard) -> FastAPI:
+    """Expects an invokeable agent and an agent card as inputs."""
+    
     app = FastAPI(title=agent_card.name)
 
     @app.get("/.well-known/agent.json")
