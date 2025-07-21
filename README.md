@@ -1,4 +1,4 @@
-# A2A_bidirectional - Bidirectional task delegation using A2A
+# A2A Agent Mesh - Bidirectional task delegation using A2A
 ## Introduction
 This repository provides a small and easy A2A example written in Python where __each agent can be both client and server at the same time__.
 __Each of the agents is capable of receiving tasks and delegating them to other agents__. Each agent can talk to any peer through the lightweight Agent‑to‑Agent (A2A) JSON‑RPC protocol, and register itself dynamically at run‑time.
